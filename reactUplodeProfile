@@ -1,0 +1,197 @@
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import Nav from 'react-bootstrap/Nav';
+import Tab from 'react-bootstrap/Tab';
+import Tabs from 'react-bootstrap/Tabs';
+import Button from 'react-bootstrap/Button';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+// import Image from 'next/image';
+import avathar from "../../assets/images/profile-avathar.png"
+import apiCalls from 'src/api/apiCalls';
+import React, { useState } from 'react'
+
+const ProfilePage =()=> {
+    const[profile,setProfile]=useState({fullname: '', email: '', phoneNo: '', country: '', profilePicUrl: "" })
+    const [validated, setValidated] = useState(false);
+    const[error, setError]=useState(false)
+
+    const UploadProfile = (event) => {
+         if (event.target.files && event.target.files[0]) {
+         const file = event.target.files[0];
+         if (!file.name.match(/\.(jpg|jpeg|png|gif)$/)) {
+       } else {
+        SaveProfile(file);
+        }
+    }
+        
+    };
+    const SaveProfile=async(file,event)=>{
+        const body = new FormData();
+        body.append('file', file);
+        let obj={...profile}
+        let response = await apiCalls.getUploadFileNew(body)
+            if(response.ok){
+                obj.profilePicUrl =response.data;
+                setProfile(obj); 
+        }
+    }
+    const handleChange=(e,type)=>{
+        if (type === 'phoneNo') {
+            if (!e.target.value || e.target.value?.match(/^\d{1,}(\.\d{0,4})?$/)) {
+                setProfile({ ...profile, phoneNo: e.target.value });
+            }
+        } else {
+            const value = e.target.value;
+            let _obj = { ...profile };
+            _obj[type] = value;
+            setProfile(_obj);
+        }
+    }
+    const saveDetails =(event) => {
+        debugger
+            event.preventDefault();
+            const form = event.currentTarget;
+            let obj = {
+                name: profile.fullname,
+                email: profile.email,
+                phoneNo: profile.phoneNo,
+                country: profile.country,
+            };
+            if (form.checkValidity() === true) {
+                console.log(obj);
+            } 
+            setValidated(true);
+    }
+        return (
+        <>
+            <div>
+                <h3 className='section-title mb-4 mt-2'>Profile Settings</h3>
+                <Row className='align-items-lg-stretch'>
+                    <Col lg={4} md={12}>
+                        <div className="profile-leftpanel">
+                            <div className='avathar-image mt-2'>
+                                <img src={profile?.profilePicUrl} alt="" />
+                                <input type="file" name="myImage" className="icon md cam" onChange={UploadProfile}/>
+                            </div>
+                            <h4 className='text-center avthar-name mt-2'>Jones Ferdinand</h4>
+                        </div>
+                    </Col>
+                    <Col lg={8} md={12}>
+                        <div className="profile-rightpanel">
+                            <Tabs
+                                defaultActiveKey="profile"
+                                id="uncontrolled-tab-example"
+                                className="mb-5 mt-4"
+                            >
+                                <Tab eventKey="home" title="Profile Settings">
+                                <Form noValidate validated={validated} onSubmit={saveDetails}>
+                                    <Row> 
+                                        <Col lg={6} md={12}>
+                                            <FloatingLabel
+                                                controlId="floatingInput"
+                                                label="Full name"
+                                                className="mb-3 input-style" 
+                                            >
+                                                <Form.Control type="text" name='paymentType' placeholder="Full name"  onChange={(e) =>handleChange(e,"fullname")} required />
+                                                 <Form.Control.Feedback type="invalid">Please provide a valid Name.</Form.Control.Feedback>
+                                            </FloatingLabel>
+                                        </Col>
+                                        <Col lg={6} md={12}>
+                                            <FloatingLabel
+                                                controlId="floatingInput"
+                                                label="Email id"
+                                                className="mb-3 input-style"
+                                            >
+                                                <Form.Control type="text" name='paymentType' placeholder="Email id" onChange={(e) =>handleChange(e,"email")} required/>
+                                                <Form.Control.Feedback type="invalid">Please provide a valid Email</Form.Control.Feedback>
+                                            </FloatingLabel>
+                                        </Col>
+                                        
+                                    </Row>
+                                    <Row>
+                                        <Col lg={6} md={12}>
+                                            <FloatingLabel
+                                                controlId="floatingInput"
+                                                label="Phone"
+                                                className="mb-3 input-style"
+                                            >
+                                                <Form.Control type="text" name='paymentType' placeholder="Phone" onChange={(e) =>handleChange(e,'phoneNo')}
+                                                onKeyPress={(e) => {
+                                                    if (!/[0-9]/.test(e.key)) {
+                                                     e.preventDefault();
+                                                     }
+                                                     else{
+                                                        setError("provide Only numbers")
+                                                     }
+                                                     }} required/>
+                                                <Form.Control.Feedback type="invalid">Please provide a valid phonNo{error}</Form.Control.Feedback>
+                                            </FloatingLabel>
+                                        </Col>
+                                        <Col lg={6} md={12}>
+                                            <Form.Select aria-label="Default select example" className='select-style'onChange={(e) =>handleChange(e,'country')} required >
+                                                <option>Country</option>
+                                                <option value="1">India</option>
+                                                <option value="2">Singapore</option>
+                                            </Form.Select>
+                                            <Form.Control.Feedback type="invalid">Please provide a valid Country</Form.Control.Feedback>
+                                        </Col>
+                                    </Row>
+                                    <div className='text-end mt-5 mb-5'>
+                                        <Button className='primary-btn' type='submit'>Submit</Button>{' '}
+                                    </div>
+                                    </Form>
+                                </Tab>
+                                <Tab eventKey="profile" title="Password Change">
+                                    <Row>
+                                        <Col lg={12} md={12}>
+                                            <FloatingLabel
+                                                controlId="floatingInput"
+                                                label="Old Password"
+                                                className="mb-3 input-style"
+                                            ><span className='icon password-hide'></span>
+                                                <Form.Control type="text" name='paymentType' placeholder="Old Password" required />
+                                            </FloatingLabel>
+                                        </Col>
+                                        <Col lg={12} md={12}>
+                                            {/* <div className="input-style mb-4">
+                                                <input type="password" required />
+                                                <label >New Password</label>
+                                                <span className='icon password-hide'></span>
+                                            </div> */}
+                                            <FloatingLabel
+                                                controlId="floatingInput"
+                                                label="New Password"
+                                                className="mb-3 input-style"
+                                            ><span className='icon password-show'></span>
+                                                <Form.Control type="text" name='paymentType' placeholder="New Password" required />
+                                            </FloatingLabel>
+                                        </Col>
+                                        <Col lg={12} md={12}>
+                                            {/* <div className="input-style mb-4">
+                                                <input type="password" required />
+                                                <label >Confirm Password</label>
+                                                <span className='icon password-show'></span>
+                                            </div> */}
+                                            <FloatingLabel
+                                                controlId="floatingInput"
+                                                label="Confirm Password"
+                                                className="mb-3 input-style"
+                                            >
+                                                <span className='icon password-show'></span>
+                                                <Form.Control type="text" name='paymentType' placeholder="Confirm Password" required />
+                                            </FloatingLabel>
+                                        </Col>
+                                    </Row>
+                                    <div className='text-end mt-4 mb-4'>
+                                        <Button className='primary-btn'  >Submit</Button>{' '}
+                                    </div>
+                                </Tab>
+                            </Tabs>
+                        </div>
+                    </Col>
+                </Row>
+            </div>
+            </>);
+}
+export default ProfilePage
